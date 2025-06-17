@@ -50,6 +50,12 @@ export default function DashboardPage() {
     setSelectedNote(null);
   };
 
+  const handleEditNote = (id: string, title: string, content: string) => {
+    const updatedNote = { id, title, content, updatedAt: new Date() };
+    setNotes(notes.map((note) => (note.id === id ? updatedNote : note)));
+    setSelectedNote(updatedNote);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header onAddNote={() => setIsAddModalOpen(true)} userName={"Sandeep"} />
@@ -62,6 +68,7 @@ export default function DashboardPage() {
           note={selectedNote}
           onClose={handleCloseModal}
           onDelete={handleDeleteNote}
+          onEdit={handleEditNote}
         />
       )}
 

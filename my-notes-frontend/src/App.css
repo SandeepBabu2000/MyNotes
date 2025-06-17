@@ -3,3 +3,46 @@
   margin: 0 auto;
   text-align: center;
 }
+
+/* ContentEditable placeholder styles */
+[contenteditable][data-placeholder]:empty:before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  font-style: italic;
+  pointer-events: none;
+}
+
+[contenteditable][data-placeholder]:focus:empty:before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  font-style: italic;
+  pointer-events: none;
+}
+
+/* Rich text editor styles */
+[contenteditable] {
+  outline: none;
+}
+
+[contenteditable] ul {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+[contenteditable] ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+[contenteditable] li {
+  margin: 0.25em 0;
+}
+
+[contenteditable] a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+[contenteditable] a:hover {
+  color: #1d4ed8;
+}
