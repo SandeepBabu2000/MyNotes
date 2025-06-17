@@ -1,0 +1,2 @@
+# MyNotes
+Collaborative notes application
