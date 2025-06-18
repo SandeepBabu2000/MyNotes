@@ -8,9 +8,10 @@ import {
   EditorProvider,
   Toolbar,
 } from "react-simple-wysiwyg";
+import { noteService } from "../../services/notesServices/noteServices";
 
 interface AddNoteModalProps {
-  onAdd: (title: string, content: string) => void;
+  onAdd: () => void;
   onClose: () => void;
 }
 
@@ -20,10 +21,15 @@ export default function AddNoteModal({ onAdd, onClose }: AddNoteModalProps) {
   const titleRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim() && content.trim()) {
-      onAdd(title.trim(), content.trim());
+      const response = await noteService.addNote({
+        title: title.trim(),
+        content: content.trim(),
+      });
+      onAdd();
+      console.log(response);
     }
   };
 

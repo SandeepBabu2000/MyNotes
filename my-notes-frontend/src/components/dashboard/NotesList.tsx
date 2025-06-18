@@ -16,7 +16,7 @@ export default function NotesList({ notes, onNoteClick }: NotesListProps) {
         </div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">No notes yet</h3>
         <p className="text-gray-500">
-          Create your first note by clicking the
+          Create your first note by clicking the{" "}
           <img
             src={AddNoteIcon}
             alt="Add Note"
@@ -43,9 +43,11 @@ export default function NotesList({ notes, onNoteClick }: NotesListProps) {
             {note.content}
           </p>
           <div className="flex items-center justify-between text-xs text-gray-500 absolute bottom-4 right-4 gap-2">
-            <span>{note.updatedAt.toLocaleDateString()}</span>
             <span>
-              {note.updatedAt.toLocaleTimeString([], {
+              {new Date(note.lastEdited).toLocaleString([], {
+                year: "numeric",
+                month: "numeric",
+                day: "numeric",
                 hour: "2-digit",
                 minute: "2-digit",
               })}

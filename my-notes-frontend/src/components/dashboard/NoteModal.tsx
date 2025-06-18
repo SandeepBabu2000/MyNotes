@@ -9,12 +9,16 @@ import {
   EditorProvider,
   Toolbar,
 } from "react-simple-wysiwyg";
+import { noteService } from "../../services/notesServices/noteServices";
+import ShareIcon from "../../assets/icons/ShareIcon.png";
+import DeleteIcon from "../../assets/icons/DeleteIcon.png";
+import EditIcon from "../../assets/icons/EditIcon.png";
 
 interface NoteModalProps {
   note: Note;
   onClose: () => void;
   onDelete: () => void;
-  onEdit: (id: string, title: string, content: string) => void;
+  onEdit: () => void;
 }
 
 export default function NoteModal({
@@ -26,10 +30,18 @@ export default function NoteModal({
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(note.title);
   const [editContent, setEditContent] = useState(note.content);
+  const [lastEdited, setLastEdited] = useState(note.lastEdited);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editTitle.trim() && editContent.trim()) {
-      onEdit(note.id, editTitle.trim(), editContent.trim());
+      const editedNote = await noteService.updateNote({
+        id: note.id,
+        title: editTitle.trim(),
+        content: editContent.trim(),
+        lastEdited: new Date(),
+      });
+      setLastEdited(editedNote.lastEdited);
+      onEdit();
       setIsEditing(false);
     }
   };
@@ -38,6 +50,11 @@ export default function NoteModal({
     setEditTitle(note.title);
     setEditContent(note.content);
     setIsEditing(false);
+  };
+
+  const handleDelete = () => {
+    noteService.deleteNote(note.id);
+    onDelete();
   };
 
   const handleClose = () => {
@@ -59,7 +76,7 @@ export default function NoteModal({
     <EditorProvider>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden p-3">
-          <div className="flex items-center justify-between p-3 border-b border-gray-200">
+          <div className="flex items-center justify-between  ">
             {isEditing ? (
               <input
                 type="text"
@@ -69,7 +86,7 @@ export default function NoteModal({
                 placeholder="Enter title..."
               />
             ) : (
-              <h2 className="text-2xl font-bold text-gray-900">{note.title}</h2>
+              <h2 className="text-2xl font-bold text-gray-900">{editTitle}</h2>
             )}
             <div
               onClick={handleClose}
@@ -98,17 +115,23 @@ export default function NoteModal({
             ) : (
               <div className="prose max-w-none">
                 <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                  {note.content}
+                  {editContent}
                 </div>
               </div>
             )}
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-between pt-2 ">
             <div className="text-sm text-gray-500">
               <span>
-                Last Updated: {note.updatedAt.toLocaleDateString()} at{" "}
-                {note.updatedAt.toLocaleTimeString()}
+                Last Updated:{" "}
+                {new Date(lastEdited).toLocaleString([], {
+                  year: "numeric",
+                  month: "numeric",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -129,20 +152,26 @@ export default function NoteModal({
                   </button>
                 </>
               ) : (
-                <>
-                  <button
+                <div className="flex items-center gap-5">
+                  <div
                     onClick={() => setIsEditing(true)}
-                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition-colors duration-200"
+                    className="cursor-pointer hover:scale-110 transition-transform duration-200"
                   >
-                    Edit
-                  </button>
-                  <button
-                    onClick={onDelete}
-                    className="px-4 py-2 border border-red-500 hover:bg-red-100 text-red-500 rounded-md transition-colors duration-200"
+                    <img src={EditIcon} alt="Edit" className="w-6 h-6" />
+                  </div>
+                  <div
+                    onClick={() => {}}
+                    className="cursor-pointer hover:scale-110 transition-transform duration-200"
                   >
-                    Delete
-                  </button>
-                </>
+                    <img src={ShareIcon} alt="Edit" className="w-6 h-6" />
+                  </div>
+                  <div
+                    onClick={handleDelete}
+                    className="cursor-pointer hover:scale-110 transition-transform duration-200"
+                  >
+                    <img src={DeleteIcon} alt="Delete" className="w-6 h-6" />
+                  </div>
+                </div>
               )}
             </div>
           </div>

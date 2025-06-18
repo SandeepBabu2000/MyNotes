@@ -1,20 +1,35 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authService } from "../../services/authServices/authService";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: Add login logic here
-    navigate("/dashboard");
+    setError("");
+    try {
+      const response = await authService.login(email, password);
+      if (response.token) {
+        localStorage.setItem("token", response.token);
+        navigate("/dashboard");
+      } else {
+        setError("Login failed. Please check your credentials.");
+      }
+    } catch (err) {
+      setError("An error occurred during login. Please try again.");
+      console.error("Login error:", err);
+    }
   };
+
   return (
     <div>
       <form onSubmit={handleSubmit}>
+        {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
         <div className="mb-4 flex flex-col items-start">
           <label className="text-sm font-medium mb-2">Email</label>
           <input

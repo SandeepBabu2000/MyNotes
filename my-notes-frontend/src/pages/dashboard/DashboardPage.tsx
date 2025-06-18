@@ -1,39 +1,36 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../../components/dashboard/Header";
 import NoteModal from "../../components/dashboard/NoteModal";
 import AddNoteModal from "../../components/dashboard/AddNoteModal";
 import NotesList from "../../components/dashboard/NotesList";
 import type { Note } from "../../types/CommonTypes";
+import { isTokenExpired } from "../../utils/tokenUtils";
+import { noteService } from "../../services/notesServices/noteServices";
 
 export default function DashboardPage() {
-  const [notes, setNotes] = useState<Note[]>([
-    {
-      id: "1",
-      title: "Welcome to MyNotes",
-      content:
-        "This is your first note. Click on any note to view it in full screen. Use the + button to add new notes.",
-      updatedAt: new Date(),
-    },
-    {
-      id: "2",
-      title: "Getting Started",
-      content:
-        "Here are some tips to get started:\n\n1. Click the + icon to add new notes\n2. Click on any note to view it in full screen\n3. Your notes are automatically saved\n4. Use the search feature to find specific notes",
-      updatedAt: new Date(),
-    },
-  ]);
-
+  const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const handleAddNote = (title: string, content: string) => {
-    const newNote: Note = {
-      id: Date.now().toString(),
-      title,
-      content,
-      updatedAt: new Date(),
-    };
-    setNotes([newNote, ...notes]);
+  const navigate = useNavigate();
+
+  const fetchNotes = async () => {
+    const fetchedNotes = await noteService.getNotes();
+    setNotes(fetchedNotes);
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token || isTokenExpired(token)) {
+      navigate("/");
+    } else {
+      fetchNotes();
+    }
+  }, [navigate]);
+
+  const handleAddNote = () => {
+    fetchNotes();
     setIsAddModalOpen(false);
   };
 
@@ -46,14 +43,12 @@ export default function DashboardPage() {
   };
 
   const handleDeleteNote = () => {
-    setNotes(notes.filter((note) => note.id !== selectedNote?.id));
+    fetchNotes();
     setSelectedNote(null);
   };
 
-  const handleEditNote = (id: string, title: string, content: string) => {
-    const updatedNote = { id, title, content, updatedAt: new Date() };
-    setNotes(notes.map((note) => (note.id === id ? updatedNote : note)));
-    setSelectedNote(updatedNote);
+  const handleEditNote = () => {
+    fetchNotes();
   };
 
   return (
