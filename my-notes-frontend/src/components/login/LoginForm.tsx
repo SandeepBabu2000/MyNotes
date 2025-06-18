@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authService } from "../../services/authServices/authService";
+import { toast } from "react-toastify";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -16,6 +17,7 @@ export default function LoginForm() {
       const response = await authService.login(email, password);
       if (response.token) {
         localStorage.setItem("token", response.token);
+        toast.success("Login successful!");
         navigate("/dashboard");
       } else {
         setError("Login failed. Please check your credentials.");
@@ -27,8 +29,8 @@ export default function LoginForm() {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
+    <div className="flex flex-col items-center justify-center">
+      <form onSubmit={handleSubmit} className="w-full">
         {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
         <div className="mb-4 flex flex-col items-start">
           <label className="text-sm font-medium mb-2">Email</label>

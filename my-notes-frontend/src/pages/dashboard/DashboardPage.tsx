@@ -1,19 +1,19 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Header from "../../components/dashboard/Header";
 import NoteModal from "../../components/dashboard/NoteModal";
 import AddNoteModal from "../../components/dashboard/AddNoteModal";
 import NotesList from "../../components/dashboard/NotesList";
 import type { Note } from "../../types/CommonTypes";
-import { isTokenExpired } from "../../utils/tokenUtils";
-import { noteService } from "../../services/notesServices/noteServices";
+import { noteService } from "../../services/notesServices/NoteServices";
+import { toast } from "react-toastify";
+import useAuthGuard from "../../hooks/useAuthGuard";
 
 export default function DashboardPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const navigate = useNavigate();
+  useAuthGuard();
 
   const fetchNotes = async () => {
     const fetchedNotes = await noteService.getNotes();
@@ -21,17 +21,13 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token || isTokenExpired(token)) {
-      navigate("/");
-    } else {
-      fetchNotes();
-    }
-  }, [navigate]);
+    fetchNotes();
+  }, []);
 
   const handleAddNote = () => {
     fetchNotes();
     setIsAddModalOpen(false);
+    toast.success("Note added successfully!");
   };
 
   const handleNoteClick = (note: Note) => {
@@ -45,6 +41,7 @@ export default function DashboardPage() {
   const handleDeleteNote = () => {
     fetchNotes();
     setSelectedNote(null);
+    toast.success("Note deleted successfully!");
   };
 
   const handleEditNote = () => {

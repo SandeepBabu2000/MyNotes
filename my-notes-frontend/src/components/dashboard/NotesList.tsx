@@ -1,6 +1,7 @@
 import EmptyNotesIcon from "../../assets/icons/EmptyNotesIcon.png";
 import AddNoteIcon from "../../assets/icons/AddIcon.png";
 import type { Note } from "../../types/CommonTypes";
+import NoteTile from "./NoteTile";
 
 interface NotesListProps {
   notes: Note[];
@@ -31,29 +32,7 @@ export default function NotesList({ notes, onNoteClick }: NotesListProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {notes.map((note) => (
-        <div
-          key={note.id}
-          onClick={() => onNoteClick(note)}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 cursor-pointer hover:shadow-md transition-shadow duration-200 hover:border-gray-300 relative"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-            {note.title}
-          </h3>
-          <p className="text-gray-600 text-sm line-clamp-3 mb-4">
-            {note.content}
-          </p>
-          <div className="flex items-center justify-between text-xs text-gray-500 absolute bottom-4 right-4 gap-2">
-            <span>
-              {new Date(note.lastEdited).toLocaleString([], {
-                year: "numeric",
-                month: "numeric",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </span>
-          </div>
-        </div>
+        <NoteTile key={note.id} note={note} onNoteClick={onNoteClick} />
       ))}
     </div>
   );

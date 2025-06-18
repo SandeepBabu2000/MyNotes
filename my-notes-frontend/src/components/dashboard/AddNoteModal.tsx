@@ -8,7 +8,7 @@ import {
   EditorProvider,
   Toolbar,
 } from "react-simple-wysiwyg";
-import { noteService } from "../../services/notesServices/noteServices";
+import { noteService } from "../../services/notesServices/NoteServices";
 
 interface AddNoteModalProps {
   onAdd: () => void;
@@ -96,6 +96,7 @@ export default function AddNoteModal({ onAdd, onClose }: AddNoteModalProps) {
                     minHeight: "200px",
                     height: "300px",
                     minWidth: "600px",
+                    textAlign: "left",
                   }}
                 >
                   <Toolbar>
