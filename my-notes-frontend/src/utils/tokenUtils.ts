@@ -21,3 +21,13 @@ export function isTokenExpired(token: string): boolean {
   if (!payload || typeof payload.exp !== "number") return true;
   return Date.now() >= payload.exp * 1000;
 }
+
+export function getCurrentUserId(): number | null {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  const payload = parseJwt(token);
+  if (!payload || typeof payload.userId !== "number") return null;
+
+  return payload.userId;
+}

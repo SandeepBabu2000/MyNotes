@@ -13,6 +13,10 @@ export interface ConfigTypes {
 
 export interface AuthResponse {
   token?: string;
+  user?: {
+    id: number;
+    email: string;
+  };
 }
 
 export interface SignupResponse {
