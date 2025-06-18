@@ -14,3 +14,9 @@ export type AddNote = {
   title: string;
   content: string;
 };
+
+export type ApiResponseType = {
+  status: number;
+  message: string;
+  data: unknown;
+};

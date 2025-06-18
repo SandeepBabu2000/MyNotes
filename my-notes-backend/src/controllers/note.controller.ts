@@ -6,14 +6,18 @@ import { Validator } from "../utils/validation";
 export const getNotes = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.userId) {
-      res.status(401).json({ message: "User not authenticated" });
+      res.status(401).json({ status: 401, message: "User not authenticated" });
       return;
     }
     const notes = await NoteService.getNotes(req.userId);
-    res.json(notes);
+    res.json({
+      status: 200,
+      message: "Notes fetched successfully",
+      data: notes,
+    });
   } catch (error) {
     if (error instanceof AppError) {
-      res.status(error.statusCode).json({ message: error.message });
+      res.json({ status: error.statusCode, message: error.message });
     } else {
       res.status(500).json({ message: "Internal server error" });
     }
@@ -26,15 +30,15 @@ export const createNote = async (
 ): Promise<void> => {
   try {
     if (!req.userId) {
-      res.status(401).json({ message: "User not authenticated" });
+      res.status(401).json({ status: 401, message: "User not authenticated" });
       return;
     }
 
     const validation = Validator.validateNoteCreationData(req.body);
     if (!validation.isValid) {
       res.status(400).json({
-        message: "Validation failed",
-        errors: validation.errors,
+        status: 400,
+        message: validation.errors,
       });
       return;
     }
@@ -45,10 +49,14 @@ export const createNote = async (
       content,
       ownerId: req.userId,
     });
-    res.status(201).json(note);
+    res.status(201).json({
+      status: 201,
+      message: "Note created successfully",
+      data: note,
+    });
   } catch (error) {
     if (error instanceof AppError) {
-      res.status(error.statusCode).json({ message: error.message });
+      res.json({ status: error.statusCode, message: error.message });
     } else {
       res.status(500).json({ message: "Internal server error" });
     }
@@ -61,15 +69,15 @@ export const updateNote = async (
 ): Promise<void> => {
   try {
     if (!req.userId) {
-      res.status(401).json({ message: "User not authenticated" });
+      res.status(401).json({ status: 401, message: "User not authenticated" });
       return;
     }
 
     const idValidation = Validator.validateId(req.params.id);
     if (!idValidation.isValid) {
       res.status(400).json({
-        message: "Invalid note ID",
-        errors: idValidation.errors,
+        status: 400,
+        message: idValidation.errors,
       });
       return;
     }
@@ -77,8 +85,8 @@ export const updateNote = async (
     const validation = Validator.validateNoteUpdateData(req.body);
     if (!validation.isValid) {
       res.status(400).json({
-        message: "Validation failed",
-        errors: validation.errors,
+        status: 400,
+        message: validation.errors,
       });
       return;
     }
@@ -90,10 +98,14 @@ export const updateNote = async (
       { title, content },
       req.userId
     );
-    res.json(note);
+    res.json({
+      status: 200,
+      message: "Note Edited successfully",
+      data: note,
+    });
   } catch (error) {
     if (error instanceof AppError) {
-      res.status(error.statusCode).json({ message: error.message });
+      res.json({ status: error.statusCode, message: error.message });
     } else {
       res.status(500).json({ message: "Internal server error" });
     }
@@ -106,25 +118,28 @@ export const deleteNote = async (
 ): Promise<void> => {
   try {
     if (!req.userId) {
-      res.status(401).json({ message: "User not authenticated" });
+      res.status(401).json({ status: 401, message: "User not authenticated" });
       return;
     }
 
     const idValidation = Validator.validateId(req.params.id);
     if (!idValidation.isValid) {
       res.status(400).json({
-        message: "Invalid note ID",
-        errors: idValidation.errors,
+        status: 400,
+        message: idValidation.errors,
       });
       return;
     }
 
     const { id } = req.params;
     await NoteService.deleteNote(Number(id), req.userId);
-    res.status(204).send();
+    res.json({
+      status: 204,
+      message: "Note deleted successfully",
+    });
   } catch (error) {
     if (error instanceof AppError) {
-      res.status(error.statusCode).json({ message: error.message });
+      res.json({ status: error.statusCode, message: error.message });
     } else {
       res.status(500).json({ message: "Internal server error" });
     }
@@ -134,15 +149,15 @@ export const deleteNote = async (
 export const shareNote = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.userId) {
-      res.status(401).json({ message: "User not authenticated" });
+      res.status(401).json({ status: 401, message: "User not authenticated" });
       return;
     }
 
     const idValidation = Validator.validateId(req.params.id);
     if (!idValidation.isValid) {
       res.status(400).json({
-        message: "Invalid note ID",
-        errors: idValidation.errors,
+        status: 400,
+        message: idValidation.errors,
       });
       return;
     }
@@ -150,8 +165,8 @@ export const shareNote = async (req: Request, res: Response): Promise<void> => {
     const validation = Validator.validateShareNoteData(req.body);
     if (!validation.isValid) {
       res.status(400).json({
-        message: "Validation failed",
-        errors: validation.errors,
+        status: 400,
+        message: validation.errors,
       });
       return;
     }
@@ -165,10 +180,14 @@ export const shareNote = async (req: Request, res: Response): Promise<void> => {
       userEmail: email,
     });
 
-    res.json(result);
+    res.json({
+      status: 200,
+      message: "Note shared successfully",
+      data: result,
+    });
   } catch (error) {
     if (error instanceof AppError) {
-      res.status(error.statusCode).json({ message: error.message });
+      res.json({ status: error.statusCode, message: error.message });
     } else {
       res.status(500).json({ message: "Internal server error" });
     }

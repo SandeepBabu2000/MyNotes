@@ -16,10 +16,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     const { email, password } = req.body;
     const user = await AuthService.register({ email, password });
-    res.status(201).json(user);
+    res.status(201).json({
+      status: 201,
+      message: "User registered successfully",
+      data: user,
+    });
   } catch (error) {
     if (error instanceof AppError) {
-      res.status(error.statusCode).json({ message: error.message });
+      res.json({ status: error.statusCode, message: error.message });
     } else {
       res.status(500).json({ message: "Internal server error" });
     }
@@ -28,7 +32,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Validate login data
     const validation = Validator.validateLoginData(req.body);
     if (!validation.isValid) {
       res.status(400).json({
@@ -40,10 +43,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const { email, password } = req.body;
     const result = await AuthService.login({ email, password });
-    res.json(result);
+    res.json({
+      status: 200,
+      message: "Login successful",
+      data: result,
+    });
   } catch (error) {
     if (error instanceof AppError) {
-      res.status(error.statusCode).json({ message: error.message });
+      res.json({ status: error.statusCode, message: error.message });
     } else {
       res.status(500).json({ message: "Internal server error" });
     }

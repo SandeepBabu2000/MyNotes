@@ -16,6 +16,7 @@ import { noteService } from "../../services/notesServices/NoteServices";
 import ShareModal from "./ShareModal";
 import Button from "../common/Button";
 import { getCurrentUserId } from "../../utils/tokenUtils";
+import { toast } from "react-toastify";
 
 interface NoteModalProps {
   note: Note;
@@ -49,9 +50,15 @@ export default function NoteModal({
         ownerId: note.ownerId,
         owner: note.owner,
       });
-      setLastEdited(editedNote.lastEdited);
-      onEdit();
-      setIsEditing(false);
+      if (editedNote.status === 200) {
+        setLastEdited((editedNote.data as { lastEdited: Date }).lastEdited);
+        onEdit();
+        setIsEditing(false);
+      } else {
+        toast.error(
+          (editedNote as { message?: string }).message || "Note update failed"
+        );
+      }
     }
   };
 
@@ -61,9 +68,19 @@ export default function NoteModal({
     setIsEditing(false);
   };
 
-  const handleDelete = () => {
-    noteService.deleteNote(note.id);
-    onDelete();
+  const handleDelete = async () => {
+    const deletedNote = await noteService.deleteNote(note.id);
+    if (deletedNote.status === 204) {
+      onDelete();
+      toast.success(
+        (deletedNote as { message?: string }).message ||
+          "Note deleted successfully"
+      );
+    } else {
+      toast.error(
+        (deletedNote as { message?: string }).message || "Note deletion failed"
+      );
+    }
   };
 
   const handleClose = () => {
