@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { RequestHandler, Router } from "express";
 import {
   getNotes,
   createNote,
@@ -9,7 +9,7 @@ import { requireAuth } from "../middleware/auth.middleware";
 
 const router = Router();
 
-router.use(requireAuth);
+router.use(requireAuth as RequestHandler);
 router.get("/", getNotes);
 router.post("/", createNote);
 router.put("/:id", updateNote);
