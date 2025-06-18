@@ -1,95 +1,103 @@
 import { Request, Response } from "express";
-import prisma from "../config/db";
+import { NoteService } from "../services/note.service";
+import { AppError } from "../utils/errors";
 
 export const getNotes = async (req: Request, res: Response) => {
-  const notes = await prisma.note.findMany({
-    where: {
-      OR: [{ ownerId: req.userId }, { shared: { some: { id: req.userId } } }],
-    },
-    include: {
-      owner: {
-        select: {
-          id: true,
-          email: true,
-        },
-      },
-    },
-  });
-  res.json(notes);
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+    const notes = await NoteService.getNotes(req.userId);
+    res.json(notes);
+  } catch (error) {
+    if (error instanceof AppError) {
+      res.status(error.statusCode).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
 };
 
 export const createNote = async (req: Request, res: Response) => {
-  const { title, content } = req.body;
-  const note = await prisma.note.create({
-    data: {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+    const { title, content } = req.body;
+    const note = await NoteService.createNote({
       title,
       content,
-      owner: {
-        connect: {
-          id: req.userId,
-        },
-      },
-    },
-  });
-  res.status(201).json(note);
+      ownerId: req.userId,
+    });
+    res.status(201).json(note);
+  } catch (error) {
+    if (error instanceof AppError) {
+      res.status(error.statusCode).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
 };
 
 export const updateNote = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { title, content, lastEdited } = req.body;
-  const note = await prisma.note.update({
-    where: { id: Number(id) },
-    data: { title, content, lastEdited },
-  });
-  res.json(note);
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+    const { id } = req.params;
+    const { title, content } = req.body;
+    const note = await NoteService.updateNote(
+      Number(id),
+      { title, content },
+      req.userId
+    );
+    res.json(note);
+  } catch (error) {
+    if (error instanceof AppError) {
+      res.status(error.statusCode).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
 };
 
 export const deleteNote = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  await prisma.note.delete({ where: { id: Number(id) } });
-  res.status(204).send();
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+    const { id } = req.params;
+    await NoteService.deleteNote(Number(id), req.userId);
+    res.status(204).send();
+  } catch (error) {
+    if (error instanceof AppError) {
+      res.status(error.statusCode).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
 };
 
 export const shareNote = async (req: Request, res: Response) => {
   try {
+    if (!req.userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
     const { id } = req.params;
     const { email } = req.body;
 
-    const note = await prisma.note.findFirst({
-      where: {
-        id: Number(id),
-        ownerId: req.userId,
-      },
+    const result = await NoteService.shareNote({
+      noteId: Number(id),
+      ownerId: req.userId,
+      userEmail: email,
     });
 
-    if (!note) {
-      return res.status(404).json({ error: "Note not found or access denied" });
-    }
-
-    const userToShareWith = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (!userToShareWith) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    if (userToShareWith.id === req.userId) {
-      return res.status(400).json({ error: "Cannot share note with yourself" });
-    }
-
-    await prisma.note.update({
-      where: { id: Number(id) },
-      data: {
-        shared: {
-          connect: { id: userToShareWith.id },
-        },
-      },
-    });
-
-    res.json({ message: "Note shared successfully" });
+    res.json(result);
   } catch (error) {
-    console.error("Share note error:", error);
-    res.status(500).json({ error: "Failed to share note" });
+    if (error instanceof AppError) {
+      res.status(error.statusCode).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Internal server error" });
+    }
   }
 };
