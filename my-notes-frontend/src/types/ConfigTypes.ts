@@ -12,14 +12,19 @@ export interface ConfigTypes {
 }
 
 export interface AuthResponse {
-  token?: string;
-  user?: {
-    id: number;
-    email: string;
+  data?: {
+    token?: string;
+    user?: {
+      id: number;
+      email: string;
+    };
   };
+  status: number;
+  message: string;
 }
 
-export interface SignupResponse {
-  id: number;
-  email: string;
+export interface ApiResponse {
+  status: number;
+  message: string;
+  data?: unknown;
 }

@@ -11,6 +11,7 @@ import { noteService } from "../../services/notesServices/NoteServices";
 import Modal from "../common/Modal";
 import Button from "../common/Button";
 import Input from "../common/Input";
+import { toast } from "react-toastify";
 
 interface AddNoteModalProps {
   onAdd: () => void;
@@ -35,8 +36,12 @@ export default function AddNoteModal({
         title: title.trim(),
         content: content.trim(),
       });
-      onAdd();
-      console.log(response);
+      if (response.status === 201) {
+        onAdd();
+        toast.success(response.message || "Note created successfully");
+      } else {
+        toast.error(response.message || "Note creation failed");
+      }
     }
   };
 

@@ -1,5 +1,5 @@
 import httpService from "../httpService/HttpService";
-import type { AuthResponse, SignupResponse } from "../../types/ConfigTypes";
+import type { ApiResponse, AuthResponse } from "../../types/ConfigTypes";
 
 export const authService = {
   login: async (email: string, password: string): Promise<AuthResponse> => {
@@ -9,14 +9,11 @@ export const authService = {
     });
     return response as AuthResponse;
   },
-  register: async (
-    email: string,
-    password: string
-  ): Promise<SignupResponse> => {
+  register: async (email: string, password: string): Promise<ApiResponse> => {
     const response = await httpService("POST", "/auth/register", {
       email,
       password,
     });
-    return response as SignupResponse;
+    return response as ApiResponse;
   },
 };

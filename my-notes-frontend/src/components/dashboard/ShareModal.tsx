@@ -4,6 +4,7 @@ import Input from "../common/Input";
 import Button from "../common/Button";
 import type { Note } from "../../types/CommonTypes";
 import { noteService } from "../../services/notesServices/NoteServices";
+import { toast } from "react-toastify";
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -38,17 +39,20 @@ export default function ShareModal({ isOpen, onClose, note }: ShareModalProps) {
     setSuccess("");
 
     try {
-      await noteService.shareNote(note.id, email);
-
-      setSuccess(`Note "${note.title}" shared successfully with ${email}`);
-      setEmail("");
+      const response = await noteService.shareNote(note.id, email);
+      if (response.status === 200) {
+        setEmail("");
+        toast.success(response.message || "Note shared successfully");
+        handleClose();
+      } else {
+        toast.error(response.message || "Failed to share note");
+      }
     } catch (err: unknown) {
-      const errorMessage =
+      toast.error(
         err instanceof Error
           ? err.message
-          : "Failed to share note. Please try again.";
-      setError(errorMessage);
-      console.error("Share error:", err);
+          : "Failed to share note. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
