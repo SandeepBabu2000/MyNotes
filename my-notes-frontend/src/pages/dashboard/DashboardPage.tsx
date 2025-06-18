@@ -50,7 +50,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onAddNote={() => setIsAddModalOpen(true)} userName={"Sandeep"} />
+      <Header onAddNote={() => setIsAddModalOpen(true)} />
       <main className="container mx-auto px-4 py-6">
         <NotesList notes={notes} onNoteClick={handleNoteClick} />
       </main>
@@ -68,6 +68,7 @@ export default function DashboardPage() {
         <AddNoteModal
           onAdd={handleAddNote}
           onClose={() => setIsAddModalOpen(false)}
+          isOpen={isAddModalOpen}
         />
       )}
     </div>

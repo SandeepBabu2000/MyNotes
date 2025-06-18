@@ -1,27 +1,22 @@
 import { useState } from "react";
 import AddNoteIcon from "../../assets/icons/AddIcon.png";
 import MyNotesIcon from "../../assets/icons/MyNotesIcon.png";
-import { useNavigate } from "react-router-dom";
-import LogoutIcon from "../../assets/icons/LogoutIcon.png";
+import ProfileCard from "./ProfileCard";
+import useAuth from "../../hooks/useAuth";
 
 interface HeaderProps {
-  userName: string;
   onAddNote: () => void;
 }
 
-export default function Header({ userName, onAddNote }: HeaderProps) {
+export default function Header({ onAddNote }: HeaderProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-
-  const navigate = useNavigate();
+  const { handleLogout, user } = useAuth();
 
   const handleProfileClick = () => {
     setIsProfileOpen(!isProfileOpen);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
+  const userName = user?.email || "";
 
   return (
     <header className="bg-white shadow-sm border-b border-orange-500">
@@ -43,21 +38,10 @@ export default function Header({ userName, onAddNote }: HeaderProps) {
                 onClick={handleProfileClick}
                 className="flex items-center cursor-pointer justify-center w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-full transition-colors duration-200 font-bold text-2xl text-orange-500"
               >
-                {userName.charAt(0)}
+                {userName.charAt(0).toUpperCase()}
               </div>
               {isProfileOpen && (
-                <div className="absolute top-10 right-0 mt-2 w-48 p-2 z-50 gap-4 flex flex-col justify-center bg-gray-100 shadow-lg rounded-md border-2 border-gray-200">
-                  <div className="text-gray-700 font-bold text-lg p-1 flex items-center justify-center gap-2">
-                    Hi {userName}
-                  </div>
-                  <div
-                    onClick={handleLogout}
-                    className="text-gray-700 font-bold text-lg p-1 cursor-pointer flex items-center justify-center gap-2 bg-gray-300 hover:bg-gray-400 rounded-md border-1 border-gray-400 transition-colors duration-200"
-                  >
-                    Logout{" "}
-                    <img src={LogoutIcon} alt="Logout" className="w-5 h-5" />
-                  </div>
-                </div>
+                <ProfileCard userName={userName} handleLogout={handleLogout} />
               )}
             </div>
           </div>

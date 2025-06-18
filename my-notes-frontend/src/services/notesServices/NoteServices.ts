@@ -17,4 +17,7 @@ export const noteService = {
   deleteNote: async (id: string): Promise<void> => {
     await httpService("DELETE", `/notes/${id}`);
   },
+  shareNote: async (noteId: string, email: string): Promise<void> => {
+    await httpService("POST", `/notes/${noteId}/share`, { email });
+  },
 };

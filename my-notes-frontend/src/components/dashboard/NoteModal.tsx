@@ -13,6 +13,9 @@ import ShareIcon from "../../assets/icons/ShareIcon.png";
 import DeleteIcon from "../../assets/icons/DeleteIcon.png";
 import EditIcon from "../../assets/icons/EditIcon.png";
 import { noteService } from "../../services/notesServices/NoteServices";
+import ShareModal from "./ShareModal";
+import Button from "../common/Button";
+import { getCurrentUserId } from "../../utils/tokenUtils";
 
 interface NoteModalProps {
   note: Note;
@@ -31,6 +34,10 @@ export default function NoteModal({
   const [editTitle, setEditTitle] = useState(note.title);
   const [editContent, setEditContent] = useState(note.content);
   const [lastEdited, setLastEdited] = useState(note.lastEdited);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  const currentUserId = getCurrentUserId();
+  const isSharedNote = currentUserId && note.ownerId !== currentUserId;
 
   const handleSave = async () => {
     if (editTitle.trim() && editContent.trim()) {
@@ -39,6 +46,8 @@ export default function NoteModal({
         title: editTitle.trim(),
         content: editContent.trim(),
         lastEdited: new Date(),
+        ownerId: note.ownerId,
+        owner: note.owner,
       });
       setLastEdited(editedNote.lastEdited);
       onEdit();
@@ -98,7 +107,7 @@ export default function NoteModal({
 
           <div className="border border-orange-500 rounded-md p-3 flex flex-col flex-1 min-h-0">
             <div className="flex items-center justify-end">
-              {!isEditing && (
+              {!isEditing && !isSharedNote && (
                 <div
                   onClick={() => setIsEditing(true)}
                   className="cursor-pointer hover:scale-110 transition-transform duration-200"
@@ -148,34 +157,46 @@ export default function NoteModal({
               <div className="flex items-center gap-2">
                 {isEditing ? (
                   <>
-                    <button
-                      onClick={handleCancel}
-                      className="px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors duration-200"
-                    >
+                    <Button variant="secondary" onClick={handleCancel}>
                       Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={handleSave}
                       disabled={!editTitle.trim() || !editContent.trim()}
-                      className="px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-md transition-colors duration-200"
                     >
                       Save
-                    </button>
+                    </Button>
                   </>
                 ) : (
                   <div className="flex items-center gap-5">
-                    <div
-                      onClick={() => {}}
-                      className="cursor-pointer hover:scale-110 transition-transform duration-200"
-                    >
-                      <img src={ShareIcon} alt="Edit" className="w-6 h-6" />
-                    </div>
-                    <div
-                      onClick={handleDelete}
-                      className="cursor-pointer hover:scale-110 transition-transform duration-200"
-                    >
-                      <img src={DeleteIcon} alt="Delete" className="w-6 h-6" />
-                    </div>
+                    {isSharedNote ? (
+                      <div className="text-gray-500 text-sm">
+                        Shared by {note.owner.email}
+                      </div>
+                    ) : (
+                      <>
+                        <div
+                          onClick={() => setIsShareModalOpen(true)}
+                          className="cursor-pointer hover:scale-110 transition-transform duration-200"
+                        >
+                          <img
+                            src={ShareIcon}
+                            alt="Share"
+                            className="w-6 h-6"
+                          />
+                        </div>
+                        <div
+                          onClick={handleDelete}
+                          className="cursor-pointer hover:scale-110 transition-transform duration-200"
+                        >
+                          <img
+                            src={DeleteIcon}
+                            alt="Delete"
+                            className="w-6 h-6"
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -183,6 +204,12 @@ export default function NoteModal({
           </div>
         </div>
       </div>
+
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        note={note}
+      />
     </EditorProvider>
   );
 }

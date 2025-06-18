@@ -1,24 +1,21 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { authService } from "../../services/authServices/authService";
-import { toast } from "react-toastify";
+import useAuth from "../../hooks/useAuth";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const navigate = useNavigate();
+  const { handleLogin } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     try {
       const response = await authService.login(email, password);
-      if (response.token) {
-        localStorage.setItem("token", response.token);
-        toast.success("Login successful!");
-        navigate("/dashboard");
+      if (response.token && response.user) {
+        handleLogin(response.token, response.user);
       } else {
         setError("Login failed. Please check your credentials.");
       }
