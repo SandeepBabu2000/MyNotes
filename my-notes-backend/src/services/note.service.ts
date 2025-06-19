@@ -36,6 +36,12 @@ export class NoteService {
             email: true,
           },
         },
+        shared: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
       },
     });
   }

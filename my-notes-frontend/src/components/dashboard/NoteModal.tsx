@@ -193,6 +193,10 @@ export default function NoteModal({
                       </div>
                     ) : (
                       <>
+                        <div className="text-gray-500 text-sm">
+                          Shared with{" "}
+                          {note?.shared?.map((user) => user.email).join(", ")}
+                        </div>
                         <div
                           onClick={() => dispatch(openShareModal())}
                           className="cursor-pointer hover:scale-110 transition-transform duration-200"
