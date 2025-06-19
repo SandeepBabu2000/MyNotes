@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Header from "../../components/dashboard/Header";
 import NoteModal from "../../components/dashboard/NoteModal";
 import AddNoteModal from "../../components/dashboard/AddNoteModal";
@@ -13,11 +13,12 @@ import {
   openAddNoteModal,
   openNoteModal,
 } from "../../store/slices/uiSlice";
+import { setNotes, setLoading, setError } from "../../store/slices/noteSlice";
 
 export default function DashboardPage() {
   const dispatch = useAppDispatch();
 
-  const [notes, setNotes] = useState<Note[]>([]);
+  const { notes, loading, error } = useAppSelector((state) => state.notes);
   const { isAddNoteModalOpen, isNoteModalOpen } = useAppSelector(
     (state) => state.ui
   );
@@ -26,8 +27,15 @@ export default function DashboardPage() {
   useAuthGuard();
 
   const fetchNotes = async () => {
-    const fetchedNotes = await noteService.getNotes();
-    setNotes(fetchedNotes);
+    try {
+      dispatch(setLoading(true));
+      const fetchedNotes = await noteService.getNotes();
+      dispatch(setNotes(fetchedNotes));
+    } catch (err) {
+      dispatch(
+        setError(err instanceof Error ? err.message : "Failed to fetch notes")
+      );
+    }
   };
 
   useEffect(() => {
@@ -60,6 +68,8 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50">
       <Header onAddNote={() => dispatch(openAddNoteModal())} />
       <main className="container mx-auto px-4 py-6">
+        {loading && <div className="text-center py-4">Loading notes...</div>}
+        {error && <div className="text-center py-4 text-red-600">{error}</div>}
         <NotesList notes={notes} onNoteClick={handleNoteClick} />
       </main>
 
