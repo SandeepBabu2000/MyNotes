@@ -60,6 +60,10 @@ export default function DashboardPage() {
     fetchNotes();
   };
 
+  const handleShareNote = () => {
+    fetchNotes();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header onAddNote={() => dispatch(openAddNoteModal())} />
@@ -74,6 +78,7 @@ export default function DashboardPage() {
           note={selectedNote}
           onDelete={handleDeleteNote}
           onEdit={handleEditNote}
+          onShare={handleShareNote}
         />
       )}
 

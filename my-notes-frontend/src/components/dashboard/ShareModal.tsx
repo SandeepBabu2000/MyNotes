@@ -5,19 +5,27 @@ import Button from "../common/Button";
 import type { Note } from "../../types/CommonTypes";
 import { noteService } from "../../services/notesServices/NoteServices";
 import { toast } from "react-toastify";
+import { closeShareModal } from "../../store/slices/uiSlice";
+import { useAppDispatch } from "../../store/hooks";
 
 interface ShareModalProps {
   isOpen: boolean;
   onClose: () => void;
   note: Note;
+  onShare: () => void;
 }
 
-export default function ShareModal({ isOpen, onClose, note }: ShareModalProps) {
+export default function ShareModal({
+  isOpen,
+  onClose,
+  note,
+  onShare,
+}: ShareModalProps) {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
+  const dispatch = useAppDispatch();
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -43,7 +51,8 @@ export default function ShareModal({ isOpen, onClose, note }: ShareModalProps) {
       if (response.status === 200) {
         setEmail("");
         toast.success(response.message || "Note shared successfully");
-        handleClose();
+        onShare();
+        dispatch(closeShareModal());
       } else {
         toast.error(response.message || "Failed to share note");
       }
@@ -62,6 +71,7 @@ export default function ShareModal({ isOpen, onClose, note }: ShareModalProps) {
     setEmail("");
     setError("");
     setSuccess("");
+    dispatch(closeShareModal());
     onClose();
   };
 

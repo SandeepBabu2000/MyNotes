@@ -31,9 +31,15 @@ interface NoteModalProps {
   note: Note | null;
   onDelete: () => void;
   onEdit: () => void;
+  onShare: () => void;
 }
 
-export default function NoteModal({ note, onDelete, onEdit }: NoteModalProps) {
+export default function NoteModal({
+  note,
+  onDelete,
+  onEdit,
+  onShare,
+}: NoteModalProps) {
   const dispatch = useAppDispatch();
 
   const [editTitle, setEditTitle] = useState(note?.title ?? "");
@@ -212,10 +218,12 @@ export default function NoteModal({ note, onDelete, onEdit }: NoteModalProps) {
                       </div>
                     ) : (
                       <>
-                        <div className="text-gray-500 text-sm">
-                          Shared with{" "}
-                          {note?.shared?.map((user) => user.email).join(", ")}
-                        </div>
+                        {note?.shared && note.shared.length > 0 && (
+                          <div className="text-gray-500 text-sm">
+                            Shared with{" "}
+                            {note.shared.map((user) => user.email).join(", ")}
+                          </div>
+                        )}
                         <div
                           onClick={() => dispatch(openShareModal())}
                           className="cursor-pointer hover:scale-110 transition-transform duration-200"
@@ -250,6 +258,7 @@ export default function NoteModal({ note, onDelete, onEdit }: NoteModalProps) {
         isOpen={isShareModalOpen}
         onClose={() => dispatch(closeShareModal())}
         note={note ?? ({} as Note)}
+        onShare={onShare}
       />
     </EditorProvider>
   );
