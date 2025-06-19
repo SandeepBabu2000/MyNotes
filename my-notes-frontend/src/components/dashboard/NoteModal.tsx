@@ -54,10 +54,9 @@ export default function NoteModal({
         setLastEdited((editedNote.data as { lastEdited: Date }).lastEdited);
         onEdit();
         setIsEditing(false);
+        toast.success(editedNote.message || "Note updated successfully");
       } else {
-        toast.error(
-          (editedNote as { message?: string }).message || "Note update failed"
-        );
+        toast.error(editedNote.message || "Note update failed");
       }
     }
   };

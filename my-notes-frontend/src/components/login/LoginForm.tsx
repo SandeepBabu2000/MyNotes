@@ -46,7 +46,6 @@ export default function LoginForm() {
       const response = await authService.login(email, password);
       if (response.data?.token && response.data?.user) {
         handleLogin(response.data.token, response.data.user);
-        toast.success(response.message || "Login successful");
       } else {
         toast.error(response.message || "Login failed");
       }

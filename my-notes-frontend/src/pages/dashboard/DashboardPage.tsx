@@ -5,7 +5,6 @@ import AddNoteModal from "../../components/dashboard/AddNoteModal";
 import NotesList from "../../components/dashboard/NotesList";
 import type { Note } from "../../types/CommonTypes";
 import { noteService } from "../../services/notesServices/NoteServices";
-import { toast } from "react-toastify";
 import useAuthGuard from "../../hooks/useAuthGuard";
 
 export default function DashboardPage() {
@@ -27,7 +26,6 @@ export default function DashboardPage() {
   const handleAddNote = () => {
     fetchNotes();
     setIsAddModalOpen(false);
-    toast.success("Note added successfully!");
   };
 
   const handleNoteClick = (note: Note) => {
@@ -41,7 +39,6 @@ export default function DashboardPage() {
   const handleDeleteNote = () => {
     fetchNotes();
     setSelectedNote(null);
-    toast.success("Note deleted successfully!");
   };
 
   const handleEditNote = () => {
