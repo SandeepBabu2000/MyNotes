@@ -7,6 +7,8 @@ import {
   validateConfirmPassword,
 } from "../../utils/validationUtils";
 import { toast } from "react-toastify";
+import EyeOpenIcon from "../../assets/icons/EyeOpenIcon.png";
+import EyeCloseIcon from "../../assets/icons/EyeCloseIcon.png";
 
 export default function SignUpForm() {
   const [email, setEmail] = useState("");
@@ -16,8 +18,13 @@ export default function SignUpForm() {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -93,34 +100,59 @@ export default function SignUpForm() {
         </div>
         <div className="mb-4 flex flex-col items-start">
           <label className="text-sm font-medium mb-2">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={handlePasswordChange}
-            onBlur={() => setPasswordError(validateStrongPassword(password))}
-            required
-            className={`w-full p-2 border rounded-md ${
-              passwordError ? "border-red-500" : "border-gray-300"
-            }`}
-          />
+          <div className="relative w-full">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={handlePasswordChange}
+              onBlur={() => setPasswordError(validateStrongPassword(password))}
+              required
+              className={`w-full p-2 pr-10 border rounded-md ${
+                passwordError ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            <div
+              onClick={togglePasswordVisibility}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer transition-all duration-200 hover:scale-110"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <img
+                  src={EyeOpenIcon}
+                  alt="Hide password"
+                  className="w-5 h-5"
+                />
+              ) : (
+                <img
+                  src={EyeCloseIcon}
+                  alt="Show password"
+                  className="w-5 h-5"
+                />
+              )}
+            </div>
+          </div>
           {passwordError && (
             <div className="mt-1 text-red-500 text-xs">{passwordError}</div>
           )}
         </div>
         <div className="mb-4 flex flex-col items-start">
           <label className="text-sm font-medium mb-2">Confirm Password</label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={handleConfirmPasswordChange}
-            onBlur={() =>
-              setConfirmPasswordError(validateStrongPassword(confirmPassword))
-            }
-            required
-            className={`w-full p-2 border rounded-md ${
-              confirmPasswordError ? "border-red-500" : "border-gray-300"
-            }`}
-          />
+          <div className="relative w-full">
+            <input
+              type={"text"}
+              value={confirmPassword}
+              onChange={handleConfirmPasswordChange}
+              onBlur={() =>
+                setConfirmPasswordError(
+                  validateConfirmPassword(password, confirmPassword)
+                )
+              }
+              required
+              className={`w-full p-2 pr-10 border rounded-md ${
+                confirmPasswordError ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+          </div>
           {confirmPasswordError && (
             <div className="mt-1 text-red-500 text-xs">
               {confirmPasswordError}
