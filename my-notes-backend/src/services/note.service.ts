@@ -68,7 +68,7 @@ export class NoteService {
     const note = await prisma.note.findFirst({
       where: {
         id: noteId,
-        ownerId: userId,
+        OR: [{ ownerId: userId }, { shared: { some: { id: userId } } }],
       },
     });
 

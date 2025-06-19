@@ -20,6 +20,7 @@ import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import {
   closeEditNoteModal,
+  closeNoteModal,
   closeShareModal,
   openEditNoteModal,
   openShareModal,
@@ -28,17 +29,11 @@ import socket from "./socket";
 
 interface NoteModalProps {
   note: Note | null;
-  onClose: () => void;
   onDelete: () => void;
   onEdit: () => void;
 }
 
-export default function NoteModal({
-  note,
-  onClose,
-  onDelete,
-  onEdit,
-}: NoteModalProps) {
+export default function NoteModal({ note, onDelete, onEdit }: NoteModalProps) {
   const dispatch = useAppDispatch();
 
   const [editTitle, setEditTitle] = useState(note?.title ?? "");
@@ -113,7 +108,8 @@ export default function NoteModal({
   };
 
   const handleClose = () => {
-    onClose();
+    dispatch(closeEditNoteModal());
+    dispatch(closeNoteModal());
   };
 
   const handleEditorChange = (content: string) => {
