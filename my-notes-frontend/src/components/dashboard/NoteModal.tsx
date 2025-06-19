@@ -49,16 +49,13 @@ export default function NoteModal({ note, onDelete, onEdit }: NoteModalProps) {
 
   useEffect(() => {
     if (note?.id) {
-      console.log(`Joining note room: ${note.id}`);
       socket.emit("join_note", { noteId: note.id });
 
       socket.on("edit_note", ({ content }) => {
-        console.log(`Received edit_note event for note ${note.id}`);
         setEditContent(content);
       });
 
       return () => {
-        console.log(`Leaving note room: ${note.id}`);
         socket.off("edit_note");
         socket.emit("leave_note", { noteId: note.id });
       };
@@ -115,7 +112,6 @@ export default function NoteModal({ note, onDelete, onEdit }: NoteModalProps) {
   const handleEditorChange = (content: string) => {
     setEditContent(content);
     if (note?.id) {
-      console.log(`Emitting edit_note for note ${note.id}`);
       socket.emit("edit_note", { noteId: note.id, content });
     }
   };
