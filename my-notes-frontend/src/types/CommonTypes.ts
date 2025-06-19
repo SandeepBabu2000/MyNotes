@@ -8,6 +8,10 @@ export type Note = {
     id: number;
     email: string;
   };
+  shared?: {
+    id: number;
+    email: string;
+  }[];
 };
 
 export type AddNote = {

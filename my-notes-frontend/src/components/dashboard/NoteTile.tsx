@@ -1,6 +1,7 @@
 import type { Note } from "../../types/CommonTypes";
 import DateChip from "../chip/datechip";
 import { getCurrentUserId } from "../../utils/tokenUtils";
+import ConnectedIcon from "../../assets/icons/ConnectedIcon.png";
 
 interface NoteTileProps {
   note: Note;
@@ -10,6 +11,9 @@ interface NoteTileProps {
 export default function NoteTile({ note, onNoteClick }: NoteTileProps) {
   const currentUserId = getCurrentUserId();
   const isSharedNote = currentUserId && note.ownerId !== currentUserId;
+  const isOwnedByCurrentUser = currentUserId && note.ownerId === currentUserId;
+  const isSharedWithOthers =
+    isOwnedByCurrentUser && note.shared && note.shared.length > 0;
 
   return (
     <div
@@ -35,11 +39,15 @@ export default function NoteTile({ note, onNoteClick }: NoteTileProps) {
             {note.owner.email.charAt(0).toUpperCase()}
           </div>
         )}
+        {isSharedWithOthers && (
+          <img src={ConnectedIcon} alt="Shared Note" className="w-6 h-6" />
+        )}
       </div>
       <div
         className="text-gray-700 leading-relaxed flex items-start h-full w-full"
         dangerouslySetInnerHTML={{ __html: note.content }}
       ></div>
+
       <DateChip date={note.lastEdited} />
     </div>
   );

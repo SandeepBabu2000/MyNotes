@@ -36,6 +36,12 @@ export class NoteService {
             email: true,
           },
         },
+        shared: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
       },
     });
   }
@@ -62,7 +68,7 @@ export class NoteService {
     const note = await prisma.note.findFirst({
       where: {
         id: noteId,
-        ownerId: userId,
+        OR: [{ ownerId: userId }, { shared: { some: { id: userId } } }],
       },
     });
 
@@ -80,7 +86,6 @@ export class NoteService {
   }
 
   static async deleteNote(noteId: number, userId: number) {
-    // Verify ownership
     const note = await prisma.note.findFirst({
       where: {
         id: noteId,
@@ -100,7 +105,6 @@ export class NoteService {
   static async shareNote(data: ShareNoteData) {
     const { noteId, ownerId, userEmail } = data;
 
-    // Verify note ownership
     const note = await prisma.note.findFirst({
       where: {
         id: noteId,
@@ -112,7 +116,6 @@ export class NoteService {
       throw new AuthorizationError("Note not found or access denied");
     }
 
-    // Find user to share with
     const userToShareWith = await prisma.user.findUnique({
       where: { email: userEmail },
     });
@@ -121,12 +124,10 @@ export class NoteService {
       throw new NotFoundError("User not found");
     }
 
-    // Prevent sharing with self
     if (userToShareWith.id === ownerId) {
       throw new ValidationError("Cannot share note with yourself");
     }
 
-    // Share the note
     await prisma.note.update({
       where: { id: noteId },
       data: {

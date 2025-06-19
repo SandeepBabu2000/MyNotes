@@ -51,16 +51,16 @@ export default function DashboardPage() {
     dispatch(openNoteModal(note));
   };
 
-  const handleCloseModal = () => {
-    dispatch(closeNoteModal());
-  };
-
   const handleDeleteNote = () => {
     fetchNotes();
     dispatch(closeNoteModal());
   };
 
   const handleEditNote = () => {
+    fetchNotes();
+  };
+
+  const handleShareNote = () => {
     fetchNotes();
   };
 
@@ -76,9 +76,9 @@ export default function DashboardPage() {
       {isNoteModalOpen && (
         <NoteModal
           note={selectedNote}
-          onClose={handleCloseModal}
           onDelete={handleDeleteNote}
           onEdit={handleEditNote}
+          onShare={handleShareNote}
         />
       )}
 

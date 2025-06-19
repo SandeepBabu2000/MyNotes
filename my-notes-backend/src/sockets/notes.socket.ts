@@ -2,18 +2,18 @@ import { Server } from "socket.io";
 
 export const setupNoteSocket = (io: Server) => {
   io.on("connection", (socket) => {
-    console.log("Connected:", socket.id);
-
-    socket.on("join_note", (noteId: string) => {
+    socket.on("join_note", ({ noteId }) => {
       socket.join(noteId);
     });
 
-    socket.on("edit_note", ({ noteId, content }) => {
-      socket.to(noteId).emit("note_updated", content);
+    socket.on("leave_note", ({ noteId }) => {
+      socket.leave(noteId);
     });
 
-    socket.on("disconnect", () => {
-      console.log("Disconnected:", socket.id);
+    socket.on("edit_note", ({ noteId, content }) => {
+      socket.to(noteId).emit("edit_note", { content });
     });
+
+    socket.on("disconnect", () => {});
   });
 };

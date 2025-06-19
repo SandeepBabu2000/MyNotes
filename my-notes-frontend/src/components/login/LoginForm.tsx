@@ -6,10 +6,13 @@ import {
   validateEmail,
   validateStrongPassword,
 } from "../../utils/validationUtils";
+import EyeOpenIcon from "../../assets/icons/EyeOpenIcon.png";
+import EyeClosedIcon from "../../assets/icons/EyeCloseIcon.png";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -26,6 +29,10 @@ export default function LoginForm() {
     const value = e.target.value;
     setPassword(value);
     setPasswordError(validateStrongPassword(value));
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -80,16 +87,37 @@ export default function LoginForm() {
         </div>
         <div className="mb-4 flex flex-col items-start">
           <label className="text-sm font-medium mb-2">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={handlePasswordChange}
-            onBlur={() => setPasswordError(validateStrongPassword(password))}
-            required
-            className={`w-full p-2 border rounded-md ${
-              passwordError ? "border-red-500" : "border-gray-300"
-            }`}
-          />
+          <div className="relative w-full">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={handlePasswordChange}
+              onBlur={() => setPasswordError(validateStrongPassword(password))}
+              required
+              className={`w-full p-2 pr-10 border rounded-md ${
+                passwordError ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            <div
+              onClick={togglePasswordVisibility}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer transition-all duration-200 hover:scale-110"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <img
+                  src={EyeOpenIcon}
+                  alt="Show password"
+                  className="w-5 h-5"
+                />
+              ) : (
+                <img
+                  src={EyeClosedIcon}
+                  alt="Show password"
+                  className="w-5 h-5"
+                />
+              )}
+            </div>
+          </div>
           {passwordError && (
             <div className="mt-1 text-red-500 text-xs">{passwordError}</div>
           )}

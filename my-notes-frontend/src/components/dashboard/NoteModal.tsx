@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Note } from "../../types/CommonTypes";
 import CloseIcon from "../../assets/icons/CloseIcon.png";
 import {
@@ -20,23 +20,25 @@ import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import {
   closeEditNoteModal,
+  closeNoteModal,
   closeShareModal,
   openEditNoteModal,
   openShareModal,
 } from "../../store/slices/uiSlice";
+import socket from "./socket";
 
 interface NoteModalProps {
   note: Note | null;
-  onClose: () => void;
   onDelete: () => void;
   onEdit: () => void;
+  onShare: () => void;
 }
 
 export default function NoteModal({
   note,
-  onClose,
   onDelete,
   onEdit,
+  onShare,
 }: NoteModalProps) {
   const dispatch = useAppDispatch();
 
@@ -50,6 +52,21 @@ export default function NoteModal({
 
   const currentUserId = getCurrentUserId();
   const isSharedNote = currentUserId && note?.ownerId !== currentUserId;
+
+  useEffect(() => {
+    if (note?.id) {
+      socket.emit("join_note", { noteId: note.id });
+
+      socket.on("edit_note", ({ content }) => {
+        setEditContent(content);
+      });
+
+      return () => {
+        socket.off("edit_note");
+        socket.emit("leave_note", { noteId: note.id });
+      };
+    }
+  }, [note?.id]);
 
   const handleSave = async () => {
     if (editTitle.trim() && editContent.trim() && note?.id && note?.ownerId) {
@@ -94,7 +111,15 @@ export default function NoteModal({
   };
 
   const handleClose = () => {
-    onClose();
+    dispatch(closeEditNoteModal());
+    dispatch(closeNoteModal());
+  };
+
+  const handleEditorChange = (content: string) => {
+    setEditContent(content);
+    if (note?.id) {
+      socket.emit("edit_note", { noteId: note.id, content });
+    }
   };
 
   return (
@@ -138,7 +163,7 @@ export default function NoteModal({
               {isEditNoteModalOpen ? (
                 <Editor
                   value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
+                  onChange={(e) => handleEditorChange(e.target.value)}
                   style={{
                     minHeight: "200px",
                     height: "100%",
@@ -193,6 +218,12 @@ export default function NoteModal({
                       </div>
                     ) : (
                       <>
+                        {note?.shared && note.shared.length > 0 && (
+                          <div className="text-gray-500 text-sm">
+                            Shared with{" "}
+                            {note.shared.map((user) => user.email).join(", ")}
+                          </div>
+                        )}
                         <div
                           onClick={() => dispatch(openShareModal())}
                           className="cursor-pointer hover:scale-110 transition-transform duration-200"
@@ -227,6 +258,7 @@ export default function NoteModal({
         isOpen={isShareModalOpen}
         onClose={() => dispatch(closeShareModal())}
         note={note ?? ({} as Note)}
+        onShare={onShare}
       />
     </EditorProvider>
   );
