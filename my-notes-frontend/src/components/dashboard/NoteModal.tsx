@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Note } from "../../types/CommonTypes";
 import CloseIcon from "../../assets/icons/CloseIcon.png";
 import {
@@ -24,6 +24,7 @@ import {
   openEditNoteModal,
   openShareModal,
 } from "../../store/slices/uiSlice";
+import socket from "./socket";
 
 interface NoteModalProps {
   note: Note | null;
@@ -50,6 +51,24 @@ export default function NoteModal({
 
   const currentUserId = getCurrentUserId();
   const isSharedNote = currentUserId && note?.ownerId !== currentUserId;
+
+  useEffect(() => {
+    if (note?.id) {
+      console.log(`Joining note room: ${note.id}`);
+      socket.emit("join_note", { noteId: note.id });
+
+      socket.on("edit_note", ({ content }) => {
+        console.log(`Received edit_note event for note ${note.id}`);
+        setEditContent(content);
+      });
+
+      return () => {
+        console.log(`Leaving note room: ${note.id}`);
+        socket.off("edit_note");
+        socket.emit("leave_note", { noteId: note.id });
+      };
+    }
+  }, [note?.id]);
 
   const handleSave = async () => {
     if (editTitle.trim() && editContent.trim() && note?.id && note?.ownerId) {
@@ -97,6 +116,14 @@ export default function NoteModal({
     onClose();
   };
 
+  const handleEditorChange = (content: string) => {
+    setEditContent(content);
+    if (note?.id) {
+      console.log(`Emitting edit_note for note ${note.id}`);
+      socket.emit("edit_note", { noteId: note.id, content });
+    }
+  };
+
   return (
     <EditorProvider>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -138,7 +165,7 @@ export default function NoteModal({
               {isEditNoteModalOpen ? (
                 <Editor
                   value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
+                  onChange={(e) => handleEditorChange(e.target.value)}
                   style={{
                     minHeight: "200px",
                     height: "100%",
