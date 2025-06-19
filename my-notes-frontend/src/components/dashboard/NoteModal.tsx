@@ -17,9 +17,16 @@ import ShareModal from "./ShareModal";
 import Button from "../common/Button";
 import { getCurrentUserId } from "../../utils/tokenUtils";
 import { toast } from "react-toastify";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import {
+  closeEditNoteModal,
+  closeShareModal,
+  openEditNoteModal,
+  openShareModal,
+} from "../../store/slices/uiSlice";
 
 interface NoteModalProps {
-  note: Note;
+  note: Note | null;
   onClose: () => void;
   onDelete: () => void;
   onEdit: () => void;
@@ -31,45 +38,48 @@ export default function NoteModal({
   onDelete,
   onEdit,
 }: NoteModalProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editTitle, setEditTitle] = useState(note.title);
-  const [editContent, setEditContent] = useState(note.content);
-  const [lastEdited, setLastEdited] = useState(note.lastEdited);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const dispatch = useAppDispatch();
+
+  const [editTitle, setEditTitle] = useState(note?.title ?? "");
+  const [editContent, setEditContent] = useState(note?.content ?? "");
+  const [lastEdited, setLastEdited] = useState(note?.lastEdited ?? new Date());
+  const isShareModalOpen = useAppSelector((state) => state.ui.isShareModalOpen);
+  const isEditNoteModalOpen = useAppSelector(
+    (state) => state.ui.isEditNoteModalOpen
+  );
 
   const currentUserId = getCurrentUserId();
-  const isSharedNote = currentUserId && note.ownerId !== currentUserId;
+  const isSharedNote = currentUserId && note?.ownerId !== currentUserId;
 
   const handleSave = async () => {
-    if (editTitle.trim() && editContent.trim()) {
+    if (editTitle.trim() && editContent.trim() && note?.id && note?.ownerId) {
       const editedNote = await noteService.updateNote({
         id: note.id,
         title: editTitle.trim(),
         content: editContent.trim(),
         lastEdited: new Date(),
         ownerId: note.ownerId,
-        owner: note.owner,
+        owner: note?.owner,
       });
       if (editedNote.status === 200) {
         setLastEdited((editedNote.data as { lastEdited: Date }).lastEdited);
         onEdit();
-        setIsEditing(false);
+        toast.success(editedNote.message || "Note updated successfully");
+        dispatch(closeEditNoteModal());
       } else {
-        toast.error(
-          (editedNote as { message?: string }).message || "Note update failed"
-        );
+        toast.error(editedNote.message || "Note update failed");
       }
     }
   };
 
   const handleCancel = () => {
-    setEditTitle(note.title);
-    setEditContent(note.content);
-    setIsEditing(false);
+    setEditTitle(note?.title ?? "");
+    setEditContent(note?.content ?? "");
+    dispatch(closeEditNoteModal());
   };
 
   const handleDelete = async () => {
-    const deletedNote = await noteService.deleteNote(note.id);
+    const deletedNote = await noteService.deleteNote(note?.id ?? "");
     if (deletedNote.status === 204) {
       onDelete();
       toast.success(
@@ -84,18 +94,7 @@ export default function NoteModal({
   };
 
   const handleClose = () => {
-    if (
-      isEditing &&
-      (editTitle !== note.title || editContent !== note.content)
-    ) {
-      if (
-        confirm("Are you sure you want to close? Your changes will be lost.")
-      ) {
-        onClose();
-      }
-    } else {
-      onClose();
-    }
+    onClose();
   };
 
   return (
@@ -103,7 +102,7 @@ export default function NoteModal({
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full min-h-[40vh] max-h-[90vh]  overflow-hidden p-3 flex flex-col gap-3">
           <div className="flex items-center justify-between px-3">
-            {isEditing ? (
+            {isEditNoteModalOpen ? (
               <input
                 type="text"
                 value={editTitle}
@@ -124,9 +123,11 @@ export default function NoteModal({
 
           <div className="border border-orange-500 rounded-md p-3 flex flex-col flex-1 min-h-0">
             <div className="flex items-center justify-end">
-              {!isEditing && !isSharedNote && (
+              {!isEditNoteModalOpen && (
                 <div
-                  onClick={() => setIsEditing(true)}
+                  onClick={() =>
+                    dispatch(openEditNoteModal(note ?? ({} as Note)))
+                  }
                   className="cursor-pointer hover:scale-110 transition-transform duration-200"
                 >
                   <img src={EditIcon} alt="Edit" className="w-6 h-6" />
@@ -134,7 +135,7 @@ export default function NoteModal({
               )}
             </div>
             <div className="overflow-y-auto flex-1 min-h-0 max-h-full">
-              {isEditing ? (
+              {isEditNoteModalOpen ? (
                 <Editor
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
@@ -172,7 +173,7 @@ export default function NoteModal({
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                {isEditing ? (
+                {isEditNoteModalOpen ? (
                   <>
                     <Button variant="secondary" onClick={handleCancel}>
                       Cancel
@@ -188,12 +189,12 @@ export default function NoteModal({
                   <div className="flex items-center gap-5">
                     {isSharedNote ? (
                       <div className="text-gray-500 text-sm">
-                        Shared by {note.owner.email}
+                        Shared by {note?.owner?.email}
                       </div>
                     ) : (
                       <>
                         <div
-                          onClick={() => setIsShareModalOpen(true)}
+                          onClick={() => dispatch(openShareModal())}
                           className="cursor-pointer hover:scale-110 transition-transform duration-200"
                         >
                           <img
@@ -224,8 +225,8 @@ export default function NoteModal({
 
       <ShareModal
         isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        note={note}
+        onClose={() => dispatch(closeShareModal())}
+        note={note ?? ({} as Note)}
       />
     </EditorProvider>
   );

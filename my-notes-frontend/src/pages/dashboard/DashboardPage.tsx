@@ -1,23 +1,41 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Header from "../../components/dashboard/Header";
 import NoteModal from "../../components/dashboard/NoteModal";
 import AddNoteModal from "../../components/dashboard/AddNoteModal";
 import NotesList from "../../components/dashboard/NotesList";
 import type { Note } from "../../types/CommonTypes";
 import { noteService } from "../../services/notesServices/NoteServices";
-import { toast } from "react-toastify";
 import useAuthGuard from "../../hooks/useAuthGuard";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import {
+  closeAddNoteModal,
+  closeNoteModal,
+  openAddNoteModal,
+  openNoteModal,
+} from "../../store/slices/uiSlice";
+import { setNotes, setLoading, setError } from "../../store/slices/noteSlice";
 
 export default function DashboardPage() {
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const dispatch = useAppDispatch();
+
+  const { notes, loading, error } = useAppSelector((state) => state.notes);
+  const { isAddNoteModalOpen, isNoteModalOpen } = useAppSelector(
+    (state) => state.ui
+  );
+  const selectedNote = useAppSelector((state) => state.ui.selectedNote);
 
   useAuthGuard();
 
   const fetchNotes = async () => {
-    const fetchedNotes = await noteService.getNotes();
-    setNotes(fetchedNotes);
+    try {
+      dispatch(setLoading(true));
+      const fetchedNotes = await noteService.getNotes();
+      dispatch(setNotes(fetchedNotes));
+    } catch (err) {
+      dispatch(
+        setError(err instanceof Error ? err.message : "Failed to fetch notes")
+      );
+    }
   };
 
   useEffect(() => {
@@ -26,22 +44,20 @@ export default function DashboardPage() {
 
   const handleAddNote = () => {
     fetchNotes();
-    setIsAddModalOpen(false);
-    toast.success("Note added successfully!");
+    dispatch(closeAddNoteModal());
   };
 
   const handleNoteClick = (note: Note) => {
-    setSelectedNote(note);
+    dispatch(openNoteModal(note));
   };
 
   const handleCloseModal = () => {
-    setSelectedNote(null);
+    dispatch(closeNoteModal());
   };
 
   const handleDeleteNote = () => {
     fetchNotes();
-    setSelectedNote(null);
-    toast.success("Note deleted successfully!");
+    dispatch(closeNoteModal());
   };
 
   const handleEditNote = () => {
@@ -50,12 +66,14 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onAddNote={() => setIsAddModalOpen(true)} />
+      <Header onAddNote={() => dispatch(openAddNoteModal())} />
       <main className="container mx-auto px-4 py-6">
+        {loading && <div className="text-center py-4">Loading notes...</div>}
+        {error && <div className="text-center py-4 text-red-600">{error}</div>}
         <NotesList notes={notes} onNoteClick={handleNoteClick} />
       </main>
 
-      {selectedNote && (
+      {isNoteModalOpen && (
         <NoteModal
           note={selectedNote}
           onClose={handleCloseModal}
@@ -64,11 +82,11 @@ export default function DashboardPage() {
         />
       )}
 
-      {isAddModalOpen && (
+      {isAddNoteModalOpen && (
         <AddNoteModal
           onAdd={handleAddNote}
-          onClose={() => setIsAddModalOpen(false)}
-          isOpen={isAddModalOpen}
+          onClose={() => dispatch(closeAddNoteModal())}
+          isOpen={isAddNoteModalOpen}
         />
       )}
     </div>

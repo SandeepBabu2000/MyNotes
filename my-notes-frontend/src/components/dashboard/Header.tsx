@@ -1,19 +1,23 @@
-import { useState } from "react";
 import AddNoteIcon from "../../assets/icons/AddIcon.png";
 import MyNotesIcon from "../../assets/icons/MyNotesIcon.png";
 import ProfileCard from "./ProfileCard";
 import useAuth from "../../hooks/useAuth";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { openAndCloseProfileModal } from "../../store/slices/uiSlice";
 
 interface HeaderProps {
   onAddNote: () => void;
 }
 
 export default function Header({ onAddNote }: HeaderProps) {
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const dispatch = useAppDispatch();
+  const isProfileModalOpen = useAppSelector(
+    (state) => state.ui.isProfileModalOpen
+  );
   const { handleLogout, user } = useAuth();
 
   const handleProfileClick = () => {
-    setIsProfileOpen(!isProfileOpen);
+    dispatch(openAndCloseProfileModal());
   };
 
   const userName = user?.email || "";
@@ -40,7 +44,7 @@ export default function Header({ onAddNote }: HeaderProps) {
               >
                 {userName.charAt(0).toUpperCase()}
               </div>
-              {isProfileOpen && (
+              {isProfileModalOpen && (
                 <ProfileCard userName={userName} handleLogout={handleLogout} />
               )}
             </div>

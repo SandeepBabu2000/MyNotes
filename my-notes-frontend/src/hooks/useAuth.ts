@@ -26,6 +26,7 @@ export default function useAuth() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    toast.success("Logout successful!");
     setUser(null);
     navigate("/");
   };
